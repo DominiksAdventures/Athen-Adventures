@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Athen Adventure</title>
+<style>
+*{box-sizing:border-box} body{margin:0;background:#f5f1e8;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+main{max-width:680px;margin:auto;padding:16px} .card{background:white;border-radius:18px;padding:20px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+h1{font-size:26px;line-height:1.15;margin:5px 0 10px} h2{font-size:18px} .muted{color:#666} .q{margin:20px 0}
+.option{display:block;padding:13px 12px;border:1px solid #ddd;border-radius:12px;margin:8px 0;cursor:pointer}
+.option input{margin-right:8px;transform:scale(1.15)} button{border:0;border-radius:12px;padding:13px 16px;background:#222;color:white;font-size:16px;font-weight:700;margin:4px 3px 4px 0}
+button.alt{background:#e8e2d7;color:#222} .good{background:#e7f5e8;border-radius:14px;padding:15px;margin-top:15px} .bad{background:#fde8e8;border-radius:14px;padding:15px;margin-top:15px}
+.dest{font-size:23px;font-weight:800;margin:8px 0} .small{font-size:13px;color:#666} .hidden{display:none}
+.progress{height:7px;background:#ddd;border-radius:9px;margin:10px 0} .bar{height:100%;width:0;background:#222;border-radius:9px}
+</style>
+</head>
+<body>
+<main>
+<div class="card">
+<div class="small">ATHEN ADVENTURE · OFFLINE</div>
+<h1>Die Stadträtsel-Jagd</h1>
+<p class="muted">Drei Rätsel lösen → Code bilden → nächstes Ziel freischalten → Audioguide hören.</p>
+<button id="start">Spiel starten</button>
+<button id="reset" class="alt">Neustart</button>
+</div>
+<div id="app"></div>
+</main>
+<script>
+(function(){
+"use strict";
+const stations=[{"n": 1, "title": "Syntagma-Platz", "place": "Syntagma-Platz", "questions": [{"text": "Welche Farbe dominiert an der großen Fassade des Parlaments?", "options": [{"key": "A", "text": "Weiß/hell"}, {"key": "B", "text": "Dunkelgrau"}, {"key": "C", "text": "Rot"}]}, {"text": "Was steht im Mittelpunkt der großen Fläche vor dem Parlament?", "options": [{"key": "A", "text": "Ein Brunnen"}, {"key": "B", "text": "Das Grabmal mit Relief"}, {"key": "C", "text": "Eine große Statue"}]}, {"text": "Die Wachen vor dem Grabmal tragen auffällige Schuhe. Was hängt an den Schuhspitzen?", "options": [{"key": "A", "text": "Runde Knöpfe"}, {"key": "B", "text": "Große Quasten/Pompons"}, {"key": "C", "text": "Sandalen"}]}], "code": "ABB", "next": "Nationalgarten", "audio": "Du hast den Syntagma-Platz geknackt. Der Platz ist nicht nur ein Verkehrsknotenpunkt, sondern ein Symbol der griechischen Demokratie. Sein Name bedeutet Verfassung. 1843 versammelten sich hier Bürger und Soldaten und forderten von König Otto eine Verfassung. Heute steht gegenüber das griechische Parlament. Besonders berühmt sind die Evzonen vor dem Grabmal des unbekannten Soldaten – die Männer in ihrer traditionellen Uniform mit den auffälligen Schuhen und Quasten. Wenn du ihnen beim Wachwechsel zusiehst, wirkt die Zeremonie fast wie ein Schauspiel. Und jetzt geht dein Abenteuer weiter in eine völlig andere Welt: nur wenige Schritte entfernt beginnt eine der grünsten Ecken Athens."}, {"n": 2, "title": "Nationalgarten – Das Mosaik", "place": "Nationalgarten", "questions": [{"text": "Welche Grundform fällt im alten Mosaik besonders häufig auf?", "options": [{"key": "A", "text": "Kreise/Bögen"}, {"key": "B", "text": "Dreiecke"}, {"key": "C", "text": "Sterne"}]}, {"text": "Was erkennst du zwischen den geometrischen Formen?", "options": [{"key": "A", "text": "Pflanzen/Blätter"}, {"key": "B", "text": "Tiere"}, {"key": "C", "text": "Gesichter"}]}, {"text": "Welche Umgebung passt am besten zum Fundort?", "options": [{"key": "A", "text": "Offene Kreuzung"}, {"key": "B", "text": "Grüner Garten"}, {"key": "C", "text": "Sandplatz"}]}], "code": "AAB", "next": "Zappeion", "audio": "Willkommen im Nationalgarten. Was heute wie eine grüne Ruheinsel mitten in der Großstadt wirkt, war ursprünglich der königliche Garten. Königin Amalia ließ ihn ab 1838 anlegen. Sie soll sich persönlich um Pflanzen gekümmert haben; besonders bekannt sind die Palmen an einem der Eingänge. Der Garten ist riesig und beherbergt hunderte Pflanzenarten. Dein kleines Mosaik ist noch älter als der moderne Garten: Es stammt von einer römischen Villa und zeigt geometrische Pflanzen- und Blattmotive. Stell dir vor, wie dieser Ort vor fast zweitausend Jahren ausgesehen haben könnte – bevor Athen zu der modernen Metropole wurde, die du heute um dich herum siehst."}, {"n": 3, "title": "Zappeion – Der Eingang", "place": "Zappeion", "questions": [{"text": "Wie wirken die Säulen vor dem Eingang?", "options": [{"key": "A", "text": "Glatt und rund"}, {"key": "B", "text": "Stark geriffelt"}, {"key": "C", "text": "Gezackt"}]}, {"text": "Was befindet sich oben über den Säulen?", "options": [{"key": "A", "text": "Ein Dreieck/Giebel"}, {"key": "B", "text": "Ein runder Turm"}, {"key": "C", "text": "Eine Glaswand"}]}, {"text": "Welche Jahreszahl gehört zur Fertigstellung des Zappeion?", "options": [{"key": "A", "text": "1888"}, {"key": "B", "text": "1927"}, {"key": "C", "text": "1896"}]}], "code": "ABA", "next": "Panathenäisches Stadion", "audio": "Das Zappeion ist eines der großen neoklassizistischen Gebäude Athens. Es entstand im 19. Jahrhundert und war eng mit der Wiederbelebung der Olympischen Spiele verbunden. Der Bau wurde mit dem Vermögen der Brüder Evangelos und Konstantinos Zappas ermöglicht – daher der Name. Heute finden hier Ausstellungen, Veranstaltungen und offizielle Empfänge statt. Besonders schön ist der große Säulengang: Er wirkt wie ein klassisches antikes Gebäude, ist aber tatsächlich ein Produkt des modernen Griechenlands. Gleich daneben beginnt ein weiterer wichtiger Ort der olympischen Geschichte Athens – das komplett aus Marmor errichtete Panathenäische Stadion."}, {"n": 4, "title": "Panathenäisches Stadion", "place": "Panathenäisches Stadion", "questions": [{"text": "Welche Farbe hat das Stadion fast vollständig?", "options": [{"key": "A", "text": "Weiß/hell"}, {"key": "B", "text": "Rot"}, {"key": "C", "text": "Schwarz"}]}, {"text": "Welche Form beschreibt die Laufbahn am besten?", "options": [{"key": "A", "text": "Kreis"}, {"key": "B", "text": "Längliches U/Oval"}, {"key": "C", "text": "Dreieck"}]}, {"text": "Die große Statue vor dem Eingang steht…", "options": [{"key": "A", "text": "auf einem hohen Sockel"}, {"key": "B", "text": "direkt auf dem Boden"}, {"key": "C", "text": "auf einem Pferd"}]}], "code": "ABA", "next": "Hadriansbogen", "audio": "Das Panathenäische Stadion, auf Griechisch Kallimarmaro – das schöne Marmorstadion –, ist eines der ungewöhnlichsten Stadien der Welt. Schon in der Antike fanden hier Wettkämpfe statt. Jahrhunderte später wurde es für die ersten modernen Olympischen Spiele von 1896 wiederhergestellt. Das Stadion ist vollständig mit hellem Marmor verkleidet. Wenn du vor den Rängen stehst, kannst du dir leicht vorstellen, wie gewaltig die Wirkung bei einem großen Wettkampf gewesen sein muss. Das Stadion ist außerdem der traditionelle Zieleinlauf des Athen-Marathons. Deine nächste Spur führt nun zurück Richtung Zentrum – zu einem Monument, das zwei Epochen Athens miteinander verbindet."}, {"n": 5, "title": "Hadriansbogen", "place": "Hadriansbogen", "questions": [{"text": "Wie viele große Durchgänge hat der Bogen unten?", "options": [{"key": "A", "text": "1"}, {"key": "B", "text": "2"}, {"key": "C", "text": "3"}]}, {"text": "Welche Form dominiert den großen Durchgang?", "options": [{"key": "A", "text": "Rundbogen"}, {"key": "B", "text": "Dreieck"}, {"key": "C", "text": "Rechteck ohne Bogen"}]}, {"text": "Die große Inschrift am Bogen ist…", "options": [{"key": "A", "text": "auf Griechisch"}, {"key": "B", "text": "auf Latein"}, {"key": "C", "text": "nur aus Zahlen"}]}], "code": "ABA", "next": "Areopag", "audio": "Du stehst unter dem Hadriansbogen. Er wurde ungefähr im zweiten Jahrhundert nach Christus errichtet und war sinnbildlich ein Tor zwischen zwei Teilen Athens. Auf der einen Seite lag das ältere griechische Athen, auf der anderen die von den Römern geprägte Stadt. Der Bogen ist etwa 18 Meter hoch und besteht aus massivem Marmor. Besonders spannend: Er steht heute frei zwischen modernen Straßen und Häusern. Ein einzelnes antikes Bauwerk ist hier also zu einem Zeitfenster geworden. Wenn du durch den Bogen schaust, siehst du gleichzeitig eine moderne Großstadt und Spuren einer Stadt, die vor fast zweitausend Jahren ganz anders aussah."}, {"n": 6, "title": "Areopag – Fels und Aussicht", "place": "Areopag", "questions": [{"text": "Worauf stehst du hier hauptsächlich?", "options": [{"key": "A", "text": "Holz"}, {"key": "B", "text": "Naturstein/Fels"}, {"key": "C", "text": "Metall"}]}, {"text": "Was ragt beim Blick Richtung Akropolis besonders deutlich über die Häuser hinaus?", "options": [{"key": "A", "text": "Die Akropolis"}, {"key": "B", "text": "Das Zappeion"}, {"key": "C", "text": "Das Stadion"}]}, {"text": "Der Zugang zum Fels besteht teilweise aus…", "options": [{"key": "A", "text": "Metalltreppen"}, {"key": "B", "text": "Holzstegen"}, {"key": "C", "text": "Stein-/Metallstufen"}]}], "code": "ABC", "next": "Philopappos-Hügel", "audio": "Der Areopag ist kein gewöhnlicher Aussichtspunkt. Dieser felsige Hügel war bereits in der Antike ein bedeutender Ort für Recht und Politik. Der Name bedeutet ungefähr Hügel des Ares. Hier tagte der Areopag, ein sehr altes Gremium Athens. Auch in der christlichen Überlieferung spielt der Ort eine Rolle: Der Apostel Paulus soll hier zu den Athenern gesprochen haben. Heute ist der Fels vor allem wegen seiner Aussicht beliebt. Direkt gegenüber liegt die Akropolis. Von hier aus wird deutlich, wie eng die historischen Hügel Athens miteinander verbunden sind. Dein nächstes Ziel liegt ebenfalls auf einem dieser Hügel."}, {"n": 7, "title": "Philopappos-Denkmal", "place": "Philopappos-Hügel", "questions": [{"text": "Wie viele deutlich erkennbare menschliche Figuren siehst du im zentralen Reliefbereich?", "options": [{"key": "A", "text": "1"}, {"key": "B", "text": "2"}, {"key": "C", "text": "3 oder mehr"}]}, {"text": "Welche Farbe hat das Monument überwiegend?", "options": [{"key": "A", "text": "Weiß/heller Marmor"}, {"key": "B", "text": "Rot"}, {"key": "C", "text": "Schwarz"}]}, {"text": "Was siehst du direkt hinter bzw. unterhalb des Monuments besonders deutlich?", "options": [{"key": "A", "text": "Weite Aussicht über die Stadt"}, {"key": "B", "text": "Großen See"}, {"key": "C", "text": "U-Bahn-Station"}]}], "code": "AAB", "next": "Agia Marina", "audio": "Du bist auf dem Philopappos-Hügel angekommen, einem der schönsten Aussichtspunkte Athens. Das monumentale Grabmal auf dem Gipfel wurde im zweiten Jahrhundert errichtet und erinnert an Gaius Julius Antiochus Epiphanes Philopappos, einen hochrangigen Mann aus dem Königreich Kommagene. Deshalb heißt der Hügel heute Philopappos-Hügel. Früher wurde er auch Hügel der Musen genannt. Der vielleicht wichtigste Schatz hier ist allerdings gar nicht das Monument: Es ist die Aussicht. Vor dir liegt die Akropolis, dahinter breitet sich Athen bis zum Meer aus. Dein nächstes Ziel führt dich nun auf den benachbarten Hügel der Nymphen."}, {"n": 8, "title": "Agia Marina – Die Kirche mit dem Felsen", "place": "Agia Marina / Hügel der Nymphen", "questions": [{"text": "Was ist am älteren Teil besonders auffällig?", "options": [{"key": "A", "text": "In den Fels gehauen"}, {"key": "B", "text": "Komplett aus Glas"}, {"key": "C", "text": "Auf Stelzen"}]}, {"text": "Welche Farbe dominiert an der großen Kirche?", "options": [{"key": "A", "text": "Weiß/hell"}, {"key": "B", "text": "Blau"}, {"key": "C", "text": "Schwarz"}]}, {"text": "Der ältere Teil wirkt eher wie…", "options": [{"key": "A", "text": "Kleine Felskammer/Kapelle"}, {"key": "B", "text": "Hoher Turm"}, {"key": "C", "text": "Freistehender Tempel"}]}], "code": "AAA", "next": "Kerameikos", "audio": "Agia Marina ist ein besonderer Ort, weil hier eine moderne Kirche mit einem viel älteren, in den Fels gehauenen Bereich verbunden ist. Die kleine Felskapelle gehört zu den ungewöhnlichsten sakralen Orten der westlichen Akropolis-Hügel. Gleich oberhalb liegt das Nationale Observatorium auf dem Hügel der Nymphen. Das Observatorium wurde im 19. Jahrhundert gegründet und war für die junge griechische Nation ein Symbol des wissenschaftlichen Aufbruchs. 1902 wurde dort Griechenlands erstes Teleskop installiert. Heute kannst du hier also in wenigen Minuten zwischen Felsenkapelle, Kirche, Aussicht und Astronomiegeschichte wechseln. Deine nächste Station führt dich wieder hinunter in die antike Stadt."}, {"n": 9, "title": "Kerameikos", "place": "Kerameikos", "questions": [{"text": "Was ist hier besonders typisch?", "options": [{"key": "A", "text": "Grabmonumente"}, {"key": "B", "text": "Moderne Hochhäuser"}, {"key": "C", "text": "Palmenallee"}]}, {"text": "Viele sichtbare antike Steinobjekte sind…", "options": [{"key": "A", "text": "Hochkantige Grabstelen/Monumente"}, {"key": "B", "text": "Nur runde Säulen"}, {"key": "C", "text": "Nur Bögen"}]}, {"text": "Welche Landschaft passt am besten?", "options": [{"key": "A", "text": "Archäologische Ruinen in offener Fläche"}, {"key": "B", "text": "Einkaufszentrum"}, {"key": "C", "text": "Strand"}]}], "code": "AAA", "next": "Monastiraki", "audio": "Kerameikos erzählt eine andere Geschichte als die Akropolis. Der Name kommt von den Töpfern, die in dieser Gegend arbeiteten. Gleichzeitig lag hier eine der wichtigsten Nekropolen des antiken Athens. Viele der sichtbaren Grabmonumente standen einst entlang der Straßen und erinnerten an die Verstorbenen. Besonders faszinierend ist, dass sich hier Stadtgeschichte und Alltagsleben mischen: Werkstätten, Straßen, Mauern und Gräber lagen dicht beieinander. Wenn du dich umsiehst, erkennst du deshalb nicht nur einzelne Ruinen, sondern den Grundriss eines ganzen antiken Stadtviertels. Jetzt geht es wieder mitten hinein ins moderne Athen."}, {"n": 10, "title": "Monastiraki – Drei Wahrzeichen", "place": "Monastiraki", "questions": [{"text": "Welche kleine Kuppelkirche steht am Platz?", "options": [{"key": "A", "text": "Pantanassa"}, {"key": "B", "text": "Agia Marina"}, {"key": "C", "text": "St. Paul"}]}, {"text": "Was befindet sich direkt bei der Metro?", "options": [{"key": "A", "text": "Bahnhof/Metrozugang"}, {"key": "B", "text": "Stadion"}, {"key": "C", "text": "Museumsturm"}]}, {"text": "Was liegt oberhalb der Stadt und ist vom Platz gut sichtbar?", "options": [{"key": "A", "text": "Akropolis"}, {"key": "B", "text": "Nationalgarten"}, {"key": "C", "text": "Panathenäisches Stadion"}]}], "code": "AAA", "next": "Psyrri", "audio": "Monastiraki ist einer der lebendigsten Plätze Athens. Hier treffen mehrere Zeiten aufeinander: die kleine Kirche Pantanassa, der moderne Metroverkehr, Geschäfte, Märkte und darüber die Akropolis. Der Name Monastiraki bedeutet kleines Kloster und erinnert an ein früheres Kloster, das hier stand. Rund um den Platz findest du heute Flohmärkte, Souvenirläden, Cafés und sehr viel Straßenleben. Genau diese Mischung macht den Ort so typisch für Athen: Antike und byzantinische Spuren stehen unmittelbar neben moderner Großstadt. Deine letzte Rätselstation liegt nur wenige Minuten entfernt in Psyrri."}, {"n": 11, "title": "Psyrri – Das Finale", "place": "Psyrri / Iroon-Platz", "questions": [{"text": "Was steht auf dem Iroon-Platz auffällig in der Mitte?", "options": [{"key": "A", "text": "Kleiner Brunnen"}, {"key": "B", "text": "Pferdestatue"}, {"key": "C", "text": "Großer Obelisk"}]}, {"text": "Wie viele schmale Straßen führen ungefähr vom Platz weg?", "options": [{"key": "A", "text": "2"}, {"key": "B", "text": "5"}, {"key": "C", "text": "10"}]}, {"text": "Welche Umgebung beschreibt Psyrri besser?", "options": [{"key": "A", "text": "Enge Gassen mit Cafés, Bars und Street Art"}, {"key": "B", "text": "Autobahn"}, {"key": "C", "text": "Reines Museumsviertel"}]}], "code": "ABA", "next": "FINALE", "audio": "Geschafft! Psyrri ist heute eines der lebendigsten Viertel im Zentrum Athens. Die engen Gassen, kleinen Plätze, Cafés, Bars und Street-Art-Werke geben dem Viertel einen ganz anderen Charakter als die großen antiken Monumente. Historisch war Psyrri allerdings lange ein Arbeiterviertel und galt zeitweise als eher raues Viertel. In den letzten Jahrzehnten wandelte es sich stark. Heute sitzen Besucher und Athener in denselben kleinen Straßen, in denen früher Handwerker und Händler ihrem Alltag nachgingen. Und damit endet deine Reise durch Athen: Du hast die Stadt nicht nur angesehen, sondern dich von Ort zu Ort selbst durch sie hindurchgerätselt."}];
+let current=Number(localStorage.getItem("athenStation")||1);
+let speaking=null;
+
+function save(){localStorage.setItem("athenStation",String(current));}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]});}
+
+function render(){
+ const s=stations[current-1];
+ if(!s){document.getElementById("app").innerHTML='<div class="card"><h1>🏆 Geschafft!</h1><p>Du hast alle Stationen gelöst.</p></div>';return;}
+ let out='<div class="card"><div class="small">STATION '+s.n+' / '+stations.length+'</div>';
+ out+='<h1>'+esc(s.title)+'</h1><p>Du bist bei: <b>'+esc(s.place)+'</b></p>';
+ s.questions.forEach(function(q,i){
+   out+='<div class="q"><b>'+ (i+1)+'. '+esc(q.text)+'</b>';
+   q.options.forEach(function(o){
+     out+='<label class="option"><input type="radio" name="q'+i+'" value="'+o.key+'"> <b>'+o.key+'</b> = '+esc(o.text)+'</label>';
+   });
+   out+='</div>';
+ });
+ out+='<button id="check">Code prüfen</button><div id="result"></div></div>';
+ document.getElementById("app").innerHTML=out;
+ document.getElementById("check").onclick=check;
+}
+
+function check(){
+ const s=stations[current-1], answers=[];
+ for(let i=0;i<3;i++){
+   const x=document.querySelector('input[name="q'+i+'"]:checked');
+   if(!x){document.getElementById("result").innerHTML='<div class="bad"><b>Bitte alle drei Fragen beantworten.</b></div>';return;}
+   answers.push(x.value);
+ }
+ const code=answers.join("");
+ if(code!==s.code){
+   document.getElementById("result").innerHTML='<div class="bad"><b>Noch nicht.</b><br>Dein Code lautet <b>'+code+'</b>. Prüfe deine Beobachtungen noch einmal.</div>';
+   return;
+ }
+ save();
+ let r='<div class="good"><b>✓ Richtig!</b><div>Code: <b>'+code+'</b></div>';
+ r+='<div class="dest">Nächstes Ziel: '+esc(s.next)+'</div>';
+ r+='<button id="audio">🎧 Audioguide starten</button><button id="stop" class="alt">■ Stopp</button>';
+ r+='<div class="progress"><div class="bar" id="bar"></div></div><p class="small">Der Audioguide dauert etwa 1–2 Minuten.</p>';
+ if(current<stations.length) r+='<button id="next">Weiter →</button>';
+ else r+='<b>🏆 Finale freigeschaltet!</b>';
+ r+='</div>';
+ document.getElementById("result").innerHTML=r;
+ document.getElementById("audio").onclick=function(){speak(s.audio)};
+ document.getElementById("stop").onclick=stop;
+ const next=document.getElementById("next");
+ if(next) next.onclick=function(){current++;save();render();window.scrollTo(0,0)};
+}
+
+function speak(text){
+ stop();
+ if(!("speechSynthesis" in window)){
+   alert("Dieser Browser unterstützt keine Sprachwiedergabe. Die Audioguide-Texte stehen in der Lösungs-PDF.");
+   return;
+ }
+ speaking=new SpeechSynthesisUtterance(text);
+ speaking.lang="de-DE"; speaking.rate=0.92;
+ speaking.onend=function(){const b=document.getElementById("bar");if(b)b.style.width="100%";};
+ speechSynthesis.speak(speaking);
+}
+function stop(){if("speechSynthesis" in window)speechSynthesis.cancel();}
+document.getElementById("start").onclick=function(){render();window.scrollTo(0,0)};
+document.getElementById("reset").onclick=function(){localStorage.removeItem("athenStation");current=1;stop();render();};
+render();
+})();
+</script>
+</body></html>
