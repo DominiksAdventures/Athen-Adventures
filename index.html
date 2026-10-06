@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#15222a">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Athen Adventure · V5</title>
+<title>Athen Adventure · V6</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 :root{--ink:#16242b;--paper:rgba(255,253,248,.94);--gold:#d5a34b;--sand:#f3ede1;--muted:#69737a;--ok:#e8f5e8;--bad:#fae7e4}
@@ -132,7 +132,7 @@ function showReward(s){
         <button class="secondary" onclick="openMap()">🗺️ Karte anzeigen</button>
         <button class="secondary" onclick="window.open(mapsUrl(stations[current+1]),'_blank')">🚶 Route starten</button>
       </div>
-      <div id="mapPanel" class="mapWrap" style="display:none"><div id="map"></div></div>
+      <div id="mapPanel" class="mapWrap" style="display:none"><div id="map"></div><div class="small muted" style="margin-top:7px">🚶 Laufweg über OpenStreetMap · © OpenStreetMap contributors</div></div>
       <div class="audio">
         <button class="primary" onclick="speak(stations[current].audio)">🎧 Audioguide abspielen</button>
         <button class="secondary" onclick="stopAudio()">■</button>
@@ -143,15 +143,53 @@ function showReward(s){
   if(next) setTimeout(()=>speak(s.audio),250);
   window.scrollTo({top:document.querySelector("#reward").offsetTop-20,behavior:"smooth"});
 }
-function openMap(){
-  const panel=document.querySelector("#mapPanel"); panel.style.display="block";
-  const s=stations[current+1];
-  if(!map){
-    map=L.map("map").setView([s.lat,s.lon],16);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
-  } else {map.setView([s.lat,s.lon],16);}
-  L.marker([s.lat,s.lon]).addTo(map).bindPopup(esc(s.place)).openPopup();
-  setTimeout(()=>map.invalidateSize(),100);
+async function openMap(){
+  const next=stations[current+1];
+  if(!next) return;
+  const mapEl=document.getElementById("map");
+  if(!mapEl) return;
+  if(map){ map.remove(); map=null; }
+
+  map=L.map("map",{scrollWheelZoom:true}).setView([next.lat,next.lon],16);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{
+    maxZoom:19,
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
+    referrerPolicy:"strict-origin-when-cross-origin"
+  }).addTo(map);
+
+  const from=stations[current], to=stations[current+1];
+  const fromLL=[from.lat,from.lon], toLL=[to.lat,to.lon];
+
+  L.marker(fromLL).addTo(map).bindPopup("<b>Du bist hier</b><br>"+esc(from.name));
+  L.marker(toLL).addTo(map).bindPopup("<b>Nächstes Ziel</b><br>"+esc(to.name));
+
+  const fallback=L.polyline([fromLL,toLL],{
+    color:"#b88732",weight:4,dashArray:"8 8",opacity:.75
+  }).addTo(map);
+
+  try{
+    const url="https://routing.openstreetmap.de/routed-foot/route/v1/driving/"
+      +from.lon+","+from.lat+";"+to.lon+","+to.lat
+      +"?overview=full&geometries=geojson&steps=true";
+    const res=await fetch(url);
+    if(!res.ok) throw new Error("Routing HTTP "+res.status);
+    const data=await res.json();
+    const coords=data?.routes?.[0]?.geometry?.coordinates;
+    if(!coords?.length) throw new Error("Keine Route");
+    const latlngs=coords.map(p=>[p[1],p[0]]);
+    fallback.remove();
+    L.polyline(latlngs,{color:"#b88732",weight:5,opacity:.95}).addTo(map);
+
+    const km=(data.routes[0].distance/1000).toFixed(2);
+    const min=Math.max(1,Math.round(data.routes[0].duration/60));
+    L.popup({closeButton:false,autoClose:false,closeOnClick:false})
+      .setLatLng(toLL)
+      .setContent("<b>🚶 Laufweg</b><br>"+km+" km · ca. "+min+" Min.")
+      .openOn(map);
+    map.fitBounds(L.latLngBounds(latlngs).pad(.18));
+  }catch(e){
+    map.fitBounds(L.latLngBounds([fromLL,toLL]).pad(.35));
+  }
 }
 
 function startAdventure(){
