@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#15222a">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Athen Adventure · V8</title>
+<title>Athen Adventure · V9</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 :root{--ink:#16242b;--paper:rgba(255,253,248,.94);--gold:#d5a34b;--sand:#f3ede1;--muted:#69737a;--ok:#e8f5e8;--bad:#fae7e4}
@@ -66,7 +66,9 @@ button{border:0;border-radius:15px;padding:13px 16px;font-weight:800;font-size:1
 
 .small{font-size:.9rem}
 @media(max-width:500px){.actions{grid-template-columns:1fr}}
-.infoPanel{margin-top:12px;padding:18px;border-radius:18px;background:#f5efe3}.infoPanel p{line-height:1.55}.infoPanel h3{margin:.25rem 0 .7rem}.navRow{display:flex;gap:10px;margin-top:10px}.navRow button{flex:1}</style>
+.infoPanel{margin-top:12px;padding:18px;border-radius:18px;background:#f5efe3}.infoPanel p{line-height:1.55}.infoPanel h3{margin:.25rem 0 .7rem}.navRow{display:flex;gap:10px;margin-top:10px}.navRow button{flex:1}
+.currentPhoto{width:100%;display:block;aspect-ratio:16/9;object-fit:cover;border-radius:16px;margin:12px 0 14px;background:#ddd}.transitionPage{padding:4px 0 2px}.transitionPage h1{margin:.25rem 0 .65rem}.transitionText{line-height:1.5;margin:12px 0}.wideBtn{width:100%}.nextImageWrap{position:relative}.catBadge{position:absolute;right:12px;bottom:12px;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fffdf9;box-shadow:0 4px 16px rgba(0,0,0,.2);font-size:30px}.nextPage .nextPhoto{margin-bottom:0}.final{padding:8px 0 12px}
+</style>
 </head>
 <body>
 <main>
@@ -82,6 +84,7 @@ const stations=[{"n": 1, "title": "Syntagma-Platz", "place": "Syntagma-Platz", "
 const ACCESS_PASSWORD="ATHEN2026";
 let unlocked=localStorage.getItem("athenAdventureUnlocked")==="1";
 let current=Number(localStorage.getItem("athenAdventureStation")||0);
+let rewardStep=0;
 let map=null, utterance=null;
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);}
@@ -124,58 +127,98 @@ function toggleInfo(){
   text.textContent=stations[current].info||"Für diese Station ist noch kein Wissensguide hinterlegt.";
   panel.style.display="block";
 }
-function nextStation(){stopAudio();current++;save();render();window.scrollTo({top:0,behavior:"smooth"});}
+function nextStation(){stopAudio();rewardStep=0;current++;save();render();window.scrollTo({top:0,behavior:"smooth"});}
 function goBackStation(){
   stopAudio();
   if(current>0){current--;save();render();}
 }
 function goHome(){
   stopAudio();
+  rewardStep=0;
+  current=0;
+  save();
   unlocked=false;
   localStorage.removeItem("athenAdventureUnlocked");
   render();
 }
 function showReward(s){
   document.querySelector("#quiz").style.display="none";
+  rewardStep=1;
+  renderRewardStep();
+}
+function renderRewardStep(){
+  const s=stations[current];
   const next=current+1<stations.length?stations[current+1]:null;
   const box=document.querySelector("#reward");
   box.style.display="block";
-  box.innerHTML=next?`
-    <div class="rewardBox">
-      <div class="eyebrow">Code geknackt</div>
-      <h2>🎉 Dein nächstes Ziel</h2>
-      <h1>${esc(next.place)}</h1>
-      <img class="nextPhoto" src="${imgUrl(next)}" alt="${esc(next.place)}" onerror="this.style.display='none'">
-      <div class="credit">Bild: Wikimedia Commons · <a href="${next.imagePage}" target="_blank" rel="noopener">Quelle ansehen</a></div>
-      <div class="actions">
-        <button class="secondary" onclick="openMap()">🗺️ Karte anzeigen</button>
-        <button class="secondary" onclick="window.open(mapsUrl(stations[current+1]),'_blank')">🚶 Route starten</button>
-      </div>
-      <div id="mapPanel" class="mapWrap" style="display:none"><div id="map"></div><div class="small muted" style="margin-top:7px">🚶 Laufweg über OpenStreetMap · © OpenStreetMap contributors</div></div>
-      <div class="audio">
-        <button class="primary" onclick="speak(stations[current].audio)">🎧 Audioguide abspielen</button>
-        <button class="secondary" onclick="stopAudio()">■</button>
-      </div>
-      <button class="secondary" style="width:100%;margin-top:10px" onclick="toggleInfo()">🏛️ Mehr über diesen Ort</button>
-      <div id="infoPanel" class="infoPanel" style="display:none">
-        <div class="eyebrow">Wissensguide</div>
-        <h3>🏛️ Mehr über diesen Ort</h3>
-        <p id="infoText"></p>
+
+  if(rewardStep===1){
+    box.innerHTML=`
+      <div class="transitionPage">
+        <div class="eyebrow">Code geknackt</div>
+        <h2>🎉 Sehr gut!</h2>
+        <h1>${esc(s.place)}</h1>
+        <img class="currentPhoto" src="${imgUrl(s)}" alt="${esc(s.place)}" onerror="this.style.display='none'">
+        <div class="credit">Bild: Wikimedia Commons · <a href="${s.imagePage}" target="_blank" rel="noopener">Quelle ansehen</a></div>
+        <p class="transitionText">Nimm dir einen Moment, um den Ort noch einmal auf dich wirken zu lassen.</p>
         <div class="audio">
-          <button class="primary" onclick="speak(stations[current].info)">🎧 Information anhören</button>
+          <button class="primary" onclick="speak(stations[current].audio)">🎧 Audioguide abspielen</button>
           <button class="secondary" onclick="stopAudio()">■</button>
         </div>
-      </div>
-      <button class="primary" style="margin-top:12px" onclick="nextStation()">Weiter zur nächsten Station →</button><div class="navRow">
-  <button class="secondary" onclick="goBackStation()">← Zurück</button>
-  <button class="secondary" onclick="goHome()">⌂ Startseite</button>
-</div>
-    </div>`:
-    `<div class="rewardBox"><div class="eyebrow">Finale</div><h2>🏆 Du hast Athen geknackt!</h2><p>${esc(s.audio)}</p><div class="audio"><button class="primary" onclick="speak(stations[current].audio)">🎧 Finale anhören</button><button class="secondary" onclick="stopAudio()">■</button></div>
-<div class="navRow"><button class="secondary" onclick="goBackStation()">← Zurück</button><button class="secondary" onclick="goHome()">⌂ Startseite</button></div></div>`;
-  if(next) setTimeout(()=>speak(s.audio),250);
-  window.scrollTo({top:document.querySelector("#reward").offsetTop-20,behavior:"smooth"});
+        <button class="primary wideBtn" style="margin-top:14px" onclick="showNextTarget()">Zum nächsten Hinweis →</button>
+        <div class="navRow">
+          <button class="secondary" onclick="goBackStation()">← Zurück</button>
+          <button class="secondary" onclick="goHome()">⌂ Startseite</button>
+        </div>
+      </div>`;
+    setTimeout(()=>speak(s.audio),250);
+  } else {
+    if(!next){
+      box.innerHTML=`
+        <div class="transitionPage final">
+          <div class="eyebrow">Letzte Station</div>
+          <h2>🏆 Athen geknackt!</h2>
+          <img class="currentPhoto" src="${imgUrl(s)}" alt="${esc(s.place)}" onerror="this.style.display='none'">
+          <p>${esc(s.audio)}</p>
+          <div class="audio">
+            <button class="primary" onclick="speak(stations[current].audio)">🎧 Finale anhören</button>
+            <button class="secondary" onclick="stopAudio()">■</button>
+          </div>
+          <div class="navRow">
+            <button class="secondary" onclick="goBackStation()">← Zurück</button>
+            <button class="secondary" onclick="goHome()">⌂ Startseite</button>
+          </div>
+        </div>`;
+      setTimeout(()=>speak(s.audio),250);
+      return;
+    }
+    box.innerHTML=`
+      <div class="transitionPage nextPage">
+        <div class="eyebrow">Dein nächster Hinweis</div>
+        <h2>📍 Nächstes Ziel</h2>
+        <h1>${esc(next.place)}</h1>
+        <div class="nextImageWrap">
+          <img class="nextPhoto" src="${imgUrl(next)}" alt="${esc(next.place)}" onerror="this.style.display='none'">
+          <div class="catBadge" aria-hidden="true">🐈</div>
+        </div>
+        <div class="credit">Bild: Wikimedia Commons · <a href="${next.imagePage}" target="_blank" rel="noopener">Quelle ansehen</a></div>
+        <p class="transitionText">Schau dir das Zielbild an. Die Karte zeigt dir den Weg dorthin.</p>
+        <div class="actions">
+          <button class="secondary" onclick="openMap()">🗺️ Karte anzeigen</button>
+          <button class="secondary" onclick="window.open(mapsUrl(stations[current+1]),'_blank')">🚶 Route starten</button>
+        </div>
+        <div id="mapPanel" class="mapWrap" style="display:none"><div id="map"></div><div class="small muted" style="margin-top:7px">🚶 Laufweg über OpenStreetMap · © OpenStreetMap contributors</div></div>
+        <button class="primary wideBtn" style="margin-top:14px" onclick="nextStation()">Weiter zu den Fragen →</button>
+        <div class="navRow">
+          <button class="secondary" onclick="showCurrentAudio()">← Audioguide</button>
+          <button class="secondary" onclick="goHome()">⌂ Startseite</button>
+        </div>
+      </div>`;
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
 }
+function showNextTarget(){stopAudio();rewardStep=2;renderRewardStep();window.scrollTo({top:0,behavior:"smooth"});}
+function showCurrentAudio(){stopAudio();rewardStep=1;renderRewardStep();window.scrollTo({top:0,behavior:"smooth"});}
 async function openMap(){
   const next=stations[current+1];
   if(!next) return;
