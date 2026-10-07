@@ -86,7 +86,7 @@ button{border:0;border-radius:15px;padding:13px 16px;font-weight:800;font-size:1
 </style>
 </head>
 <body>
-<div class="versionBadge">V25 · TESTVERSION</div>
+<div class="versionBadge">V26 · TESTVERSION</div>
 <main>
   <button id="testResetBtn" type="button" onclick="reset()">↺ Spiel zurücksetzen</button>
   <div class="top">
@@ -95,7 +95,7 @@ button{border:0;border-radius:15px;padding:13px 16px;font-weight:800;font-size:1
   </div>
   <div id="app"></div>
   <div id="testControls" class="testControls">
-    <div class="testControlsTitle">🧪 Teststeuerung · V25</div>
+    <div class="testControlsTitle">🧪 Teststeuerung · V26</div>
     <div class="testControlsHint">Direkt zu einer Station springen oder den Spielstand zurücksetzen.</div>
     <div class="testStationGrid">
       <button type="button" class="testStationBtn" data-test-station="0" onclick="testJump(0)">1</button>
@@ -224,12 +224,24 @@ function showFeedback(t,c){
 }
 function retryThirdQuestion(){
   const i=2;
-  const radios=document.querySelectorAll(`input[name="q${i}"]`);
-  radios.forEach(r=>r.checked=false);
+  const q=stations[current]?.questions?.[i];
+  if(!q)return;
+  if(q.type==="order"){
+    orderState[i]=[];
+    const list=document.querySelector(`[data-order-index="${i}"]`);
+    if(list){
+      list.querySelectorAll(".orderItem").forEach((b,j)=>{ b.textContent=`• ${q.items[j]}`; });
+    }
+    const hidden=document.getElementById(`orderAnswer-${i}`);
+    if(hidden)hidden.value="";
+  } else {
+    document.querySelectorAll(`input[name="q${i}"]`).forEach(r=>r.checked=false);
+  }
   const fb=document.querySelector("#feedback");
   if(fb){fb.className="feedback";fb.innerHTML="3. Frage zurückgesetzt – versuche es erneut.";}
   window.scrollTo({top:document.querySelectorAll(".question")[i]?.offsetTop||0,behavior:"smooth"});
 }
+
 function toggleInfo(){
   const panel=document.getElementById("infoPanel");
   const text=document.getElementById("infoText");
