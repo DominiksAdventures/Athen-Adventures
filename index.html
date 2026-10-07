@@ -81,10 +81,12 @@ button{border:0;border-radius:15px;padding:13px 16px;font-weight:800;font-size:1
 .testControlsTitle{font-weight:900;font-size:1rem}.testControlsHint{font-size:.82rem;color:#69737a;margin:4px 0 10px}.testStationGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}.testStationBtn{border:1px solid #b9c0c4;background:#f3ede1;border-radius:10px;padding:10px 4px;font-weight:800;cursor:pointer}.testStationBtn.active{background:#d5a34b;color:#16242b;border-color:#9b742f}.testResetLarge{width:100%;margin-top:10px;border:0;border-radius:10px;padding:11px;background:#16242b;color:#fff;font-weight:800;cursor:pointer}
 .testCorrect{display:inline-flex;align-items:center;justify-content:center;margin-left:7px;width:22px;height:22px;border-radius:50%;background:#218739;color:#fff;font-weight:900;font-size:.82rem}
 .testAnswerLabel{border-color:#218739!important;background:#e8f5e8!important}
+
+.retryQuestionBtn{display:block;margin:10px auto 0;width:auto!important;}
 </style>
 </head>
 <body>
-<div class="versionBadge">V22 · TESTVERSION</div>
+<div class="versionBadge">V23 · TESTVERSION</div>
 <main>
   <button id="testResetBtn" type="button" onclick="reset()">↺ Spiel zurücksetzen</button>
   <div class="top">
@@ -214,7 +216,20 @@ function showHint(i,level){
   const nextBtn=el.parentElement.querySelector(`[data-hint="${i}-2"]`);
   if(level===1&&q.hint2&&nextBtn)nextBtn.style.display="inline-flex";
 }
-function showFeedback(t,c){document.querySelector("#feedback").className="feedback "+c;document.querySelector("#feedback").textContent=t;}
+function showFeedback(t,c){
+  const el=document.querySelector("#feedback");
+  if(!el)return;
+  el.className="feedback "+c;
+  el.innerHTML=esc(t)+(current===2&&c==="bad"?`<button type="button" class="secondary retryQuestionBtn" onclick="retryThirdQuestion()">↻ 3. Frage erneut versuchen</button>`:"");
+}
+function retryThirdQuestion(){
+  const i=2;
+  const radios=document.querySelectorAll(`input[name="q${i}"]`);
+  radios.forEach(r=>r.checked=false);
+  const fb=document.querySelector("#feedback");
+  if(fb){fb.className="feedback";fb.innerHTML="3. Frage zurückgesetzt – versuche es erneut.";}
+  window.scrollTo({top:document.querySelectorAll(".question")[i]?.offsetTop||0,behavior:"smooth"});
+}
 function toggleInfo(){
   const panel=document.getElementById("infoPanel");
   const text=document.getElementById("infoText");
@@ -272,6 +287,8 @@ function galleryTouchEnd(e){
   if(Math.abs(dx)>45) galleryMove(dx<0?1:-1);
 }
 function renderRewardStep(){
+  const quiz=document.querySelector("#quiz");
+  if(quiz) quiz.style.display="none";
   const s=stations[current];
   const next=current+1<stations.length?stations[current+1]:null;
   const box=document.querySelector("#reward");
