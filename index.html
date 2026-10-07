@@ -86,7 +86,7 @@ button{border:0;border-radius:15px;padding:13px 16px;font-weight:800;font-size:1
 </style>
 </head>
 <body>
-<div class="versionBadge">V24 · TESTVERSION</div>
+<div class="versionBadge">V25 · TESTVERSION</div>
 <main>
   <button id="testResetBtn" type="button" onclick="reset()">↺ Spiel zurücksetzen</button>
   <div class="top">
@@ -95,7 +95,7 @@ button{border:0;border-radius:15px;padding:13px 16px;font-weight:800;font-size:1
   </div>
   <div id="app"></div>
   <div id="testControls" class="testControls">
-    <div class="testControlsTitle">🧪 Teststeuerung · V24</div>
+    <div class="testControlsTitle">🧪 Teststeuerung · V25</div>
     <div class="testControlsHint">Direkt zu einer Station springen oder den Spielstand zurücksetzen.</div>
     <div class="testStationGrid">
       <button type="button" class="testStationBtn" data-test-station="0" onclick="testJump(0)">1</button>
@@ -445,8 +445,8 @@ function startAdventure(){
   localStorage.setItem("athenAdventureUnlocked","1");
   render();
 }
-function testReset(){stopAudio();current=0;rewardStep=0;unlocked=true;localStorage.removeItem("athenAdventureStation");localStorage.setItem("athenAdventureUnlocked","1");render();}
-function testJump(index){stopAudio();current=Math.max(0,Math.min(stations.length-1,index));rewardStep=0;unlocked=true;save();localStorage.setItem("athenAdventureUnlocked","1");render();window.scrollTo({top:0,behavior:"smooth"});}
+function testReset(){stopAudio();showingReward=false;rewardStep=0;animalState={};orderState={};current=0;unlocked=true;localStorage.removeItem("athenAdventureStation");localStorage.setItem("athenAdventureUnlocked","1");render();window.scrollTo({top:0,behavior:"smooth"});}
+function testJump(index){stopAudio();showingReward=false;rewardStep=0;animalState={};orderState={};current=Math.max(0,Math.min(stations.length-1,index));unlocked=true;save();localStorage.setItem("athenAdventureUnlocked","1");render();window.scrollTo({top:0,behavior:"smooth"});}
 function updateTestControls(){
   const panel=document.getElementById("testControls");
   if(!panel)return;
@@ -471,12 +471,9 @@ function renderIntro(){
           <li>Erst mit dem richtigen Code wird das nächste Ziel enthüllt.</li>
         </ul>
       </div>
-      <p class="small muted">Bereit für dein Abenteuer? Gib das Passwort ein.</p>
+      <p class="small muted">Dies ist die Testversion. Du kannst direkt mit Station 1 beginnen oder unten eine beliebige Station auswählen.</p>
       <div class="passwordWrap">
-        <input id="accessPassword" type="password" autocomplete="off" placeholder="Passwort" onkeydown="if(event.key==='Enter')startAdventure()">
-        <div id="passwordError" class="passwordError"></div>
-        <button class="primary" style="margin-top:10px" onclick="startAdventure()">🚀 Abenteuer starten</button>
-        ${TEST_MODE?`<div class="testPanel"><strong>🧪 Testmodus</strong><div class="small muted" style="margin:6px 0 10px">Hier kannst du ohne Cache-Löschen direkt zu jeder Station springen.</div><div class="testBtns">${stations.map((st,i)=>`<button type="button" class="secondary" onclick="testJump(${i})">${i+1}</button>`).join("")}</div><button type="button" class="secondary" style="margin-top:10px;width:100%" onclick="testReset()">↺ Fortschritt zurücksetzen</button><button type="button" class="primary" style="margin-top:8px;width:100%" onclick="testJump(0)">🚀 Test mit Station 1 starten</button></div>`:""}
+        <button class="primary" style="margin-top:10px;width:100%" onclick="testJump(0)">🚀 Test mit Station 1 starten</button>
       </div>
     </div>
   </div>`;
